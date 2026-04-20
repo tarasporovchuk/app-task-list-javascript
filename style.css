@@ -169,3 +169,20 @@ input[type="text"]:focus {
     opacity: 1;
 }
 
+/* Стиль для тексту завдання, який можна редагувати */
+.task-text {
+    flex: 1; /* Текст займає весь вільний простір */
+    color: green;
+    font-size: 1.1rem;
+    padding: 2px 5px;
+    margin-right: 15px;
+    border-color: green;
+    border-radius: 5px;
+    transition: border-color 0.3s;
+}
+ 
+/* Ефект при кліку на тексті завдання (фокусі) */
+.task-text:focus {
+    background-color: ghostwhite;
+}
+
