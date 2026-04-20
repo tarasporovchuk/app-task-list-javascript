@@ -1,6 +1,6 @@
 // Отримуємо посилання на елементи DOM
 const taskInput = document.getElementById('task-input');
-const taskAddBtn = document.getElementById('add-btn'); // Виправлено id (в методичці була опечатка task-add-btn)
+const taskAddBtn = document.getElementById('add-btn'); // Залишаємо виправлений id
 const taskList = document.getElementById('task-list');
 
 document.addEventListener('DOMContentLoaded', loadTaskList);
@@ -20,19 +20,19 @@ function addTask() {
 // Функція як для додавання нових завдань, так і для
 // відтворення збереженого списку завдань з LocalStorage
 function createTaskListElement(taskText, isCompleted) {
-    // Створюємо елемент завдання (контейнер label)
     const label = document.createElement('label');
     label.className = 'task-list-item';
 
-    // Наповнюємо його структурними елементами
+    // ІНТЕГРАЦІЯ: Додано кнопку task-done-btn з методички та залишено правильний клас delete-btn
     label.innerHTML = `
         <input type="checkbox" ${isCompleted ? 'checked' : ''}>
         <span class="task-checkmark"></span>
         <span class="task-text" contenteditable="true" spellcheck="false">${taskText}</span>
+        <button class="task-done-btn" title="Змінити відмітку виконання завдання">✔</button>                
         <button class="delete-btn" title="Видалити завдання">✖</button>
     `;
 
-    // Зберігаємо зміни після редагування (втрата фокусу)
+    // Зберігаємо зміни, коли користувач клікає поза текстом (втрата фокусу)
     const textSpan = label.querySelector('.task-text');
     textSpan.addEventListener('blur', () => {
         if (textSpan.innerText.trim() === "") {
@@ -49,7 +49,7 @@ function createTaskListElement(taskText, isCompleted) {
         }
     });
 
-    // Крок 79: Запобігаємо спрацюванню події для label при кліку на тексті завданні
+    // Запобігаємо спрацюванню label при кліку на завданні
     textSpan.addEventListener('click', (e) => {
         e.preventDefault();
     });
@@ -60,7 +60,15 @@ function createTaskListElement(taskText, isCompleted) {
         saveTaskList(); 
     });
 
-    // Подія для кнопки видалення (Виправлено клас на .delete-btn)
+    // ІНТЕГРАЦІЯ: Подія для кнопки виконання завдання (✔)
+    const taskDoneBtn = label.querySelector('.task-done-btn');
+    taskDoneBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // Запобігаємо спрацюванню label
+        checkbox.checked = !checkbox.checked; // Інвертуємо стан
+        saveTaskList();
+    });
+
+    // Подія для видалення
     const taskDeleteBtn = label.querySelector('.delete-btn');
     taskDeleteBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
@@ -68,10 +76,24 @@ function createTaskListElement(taskText, isCompleted) {
         saveTaskList(); 
     });
 
+    // ІНТЕГРАЦІЯ: Подія для редагування (додано захист if, оскільки кнопки немає в HTML-шаблоні)
+    const taskEditBtn = label.querySelector('.task-edit-btn');
+    if (taskEditBtn) {
+        taskEditBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isEditing = label.classList.contains('editing');
+            if (isEditing) {
+                textSpan.blur();
+            } else {
+                textSpan.focus();
+            }
+        });
+    }
+
     taskList.appendChild(label);
 }
 
-// Функція для збереження всіх завдань у LocalStorage
+// Функція збереження всіх завдань у LocalStorage
 function saveTaskList() {
     const myTaskList = [];
     document.querySelectorAll('.task-list-item').forEach(item => {
@@ -83,9 +105,9 @@ function saveTaskList() {
     localStorage.setItem('myTaskList', JSON.stringify(myTaskList));
 }
 
-// Функція для завантаження списку завдань з LocalStorage
+// Функція завантаження списку завдань з LocalStorage
 function loadTaskList() {
-    // Видаляємо всі статичні завдання з HTML
+    // Видаляємо всі статичні завдання
     let staticTaskList = document.querySelectorAll('.task-list-item');
     staticTaskList.forEach(item => {
         item.remove();
@@ -94,14 +116,14 @@ function loadTaskList() {
     const savedTaskList = localStorage.getItem('myTaskList');
     if (savedTaskList) {
         const myTaskList = JSON.parse(savedTaskList);
-        // Виправлено баг з назвами змінних з методички
+        // Залишено виправлену назву змінної "task", щоб не було конфлікту
         myTaskList.forEach(task => { 
             createTaskListElement(task.text, task.completed);
         });
     }
 }
 
-// Функція для обробки подій на існуючих елементах списку
+// Функція для обробки подій на статичних елементах списку
 function attachTaskListEvents(label) {
     const textSpan = label.querySelector('.task-text');
     textSpan.addEventListener('blur', () => {
@@ -118,7 +140,6 @@ function attachTaskListEvents(label) {
         }
     });
 
-    // Крок 79: Запобігаємо спрацюванню події для label при кліку на тексті завданні
     textSpan.addEventListener('click', (e) => {
         e.preventDefault();
     });
@@ -128,7 +149,16 @@ function attachTaskListEvents(label) {
         saveTaskList(); 
     });
 
-    // Виправлено клас на .delete-btn
+    // ІНТЕГРАЦІЯ: Подія для кнопки виконання (✔) для статичних елементів
+    const taskDoneBtn = label.querySelector('.task-done-btn');
+    if (taskDoneBtn) {
+        taskDoneBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            checkbox.checked = !checkbox.checked;
+            saveTaskList();
+        });
+    }
+
     const taskDeleteBtn = label.querySelector('.delete-btn');
     taskDeleteBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
@@ -137,10 +167,10 @@ function attachTaskListEvents(label) {
     });
 }
 
-// Навішуємо обробку подій на статичні елементи
+// Навішуємо події на початкові завдання з HTML
 document.querySelectorAll('#task-list label').forEach(attachTaskListEvents);
 
-// Додаємо слухач кліку по кнопці "Додати"
+// Слухач кліку по кнопці "Додати"
 taskAddBtn.addEventListener('click', addTask);
 
 // Дозволяємо додавати завдання натисканням клавіші Enter
