@@ -289,4 +289,9 @@ function attachTaskListEvents(label) {
         saveTaskList(); // Зберігаємо список завдань після видалення
     });
 }
+// Запобігаємо спрацюванню події для label 
+// при кліку на тексті завданні
+textSpan.addEventListener('click', (e) => {
+    e.preventDefault();
+});
 
