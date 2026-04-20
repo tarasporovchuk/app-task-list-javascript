@@ -1,6 +1,6 @@
 // Отримуємо посилання на елементи DOM
 const taskInput = document.getElementById('task-input');
-const taskAddBtn = document.getElementById('add-btn'); // Виправлено id
+const taskAddBtn = document.getElementById('add-btn'); 
 const taskList = document.getElementById('task-list');
 
 document.addEventListener('DOMContentLoaded', loadTaskList);
@@ -11,19 +11,17 @@ function addTask() {
     if (taskText === "") return;
 
     createTaskListElement(taskText, false);
-    saveTaskList(); // Зберігаємо після додавання
+    saveTaskList(); 
 
     taskInput.value = "";
     taskInput.focus();
 }
 
-// Функція як для додавання нових завдань, так і для
-// відтворення збереженого списку завдань з LocalStorage
+// Функція як для додавання нових завдань, так і для відтворення з LocalStorage
 function createTaskListElement(taskText, isCompleted) {
     const label = document.createElement('label');
     label.className = 'task-list-item';
 
-    // ІНТЕГРАЦІЯ: Додано кнопку редагування (✏️) та виконання (✔)
     label.innerHTML = `
         <input type="checkbox" ${isCompleted ? 'checked' : ''}>
         <span class="task-checkmark"></span>
@@ -34,15 +32,12 @@ function createTaskListElement(taskText, isCompleted) {
     `;
 
     const textSpan = label.querySelector('.task-text');
-    const taskEditBtn = label.querySelector('.task-edit-btn'); // Отримуємо кнопку редагування
+    const taskEditBtn = label.querySelector('.task-edit-btn'); 
 
-    // Зберігаємо зміни, коли користувач клікає поза текстом (втрата фокусу)
     textSpan.addEventListener('blur', () => {
-        // Перевіряємо, чи текст не порожній
         if (textSpan.innerText.trim() === "") {
-            textSpan.innerText = "Введіть нове завдання"; // Запобігаємо зникненню елемента
+            textSpan.innerText = "Введіть нове завдання"; 
         }
-        // Відновлюємо стан кнопки редагування
         const isEditing = label.classList.contains('editing');
         if (isEditing) {
             label.classList.remove('editing');
@@ -52,7 +47,6 @@ function createTaskListElement(taskText, isCompleted) {
         saveTaskList();
     });
 
-    // Змінюємо відображення кнопки для редагування під час фокусу (редагування)
     textSpan.addEventListener('focus', (e) => {
         e.preventDefault();
         const isEditing = label.classList.contains('editing');
@@ -63,26 +57,22 @@ function createTaskListElement(taskText, isCompleted) {
         }
     });
 
-    // Зберігаємо зміни при натисканні Enter
     textSpan.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Запобігаємо перенесенню рядка
-            textSpan.blur();    // Викликаємо подію blur для збереження
+            e.preventDefault(); 
+            textSpan.blur();    
         }
     });
 
-    // Запобігаємо спрацюванню label при кліку на завданні
     textSpan.addEventListener('click', (e) => {
         e.preventDefault();
     });
 
-    // Подія для чекбокса: зберігаємо стан (виконано/не виконано)
     const checkbox = label.querySelector('input');
     checkbox.addEventListener('change', () => {
         saveTaskList(); 
     });
 
-    // Подія для кнопки зміни стану виконання завдання
     const taskDoneBtn = label.querySelector('.task-done-btn');
     taskDoneBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
@@ -90,7 +80,6 @@ function createTaskListElement(taskText, isCompleted) {
         saveTaskList(); 
     });
 
-    // Подія для кнопки видалення завдання
     const taskDeleteBtn = label.querySelector('.delete-btn');
     taskDeleteBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
@@ -98,21 +87,24 @@ function createTaskListElement(taskText, isCompleted) {
         saveTaskList(); 
     });
 
-    // Подія для кнопки редагування та збереження завдання
+    // ВИПРАВЛЕННЯ: Запобігаємо втраті фокусу текстом доки ми не клікнули кнопку
+    taskEditBtn.addEventListener('mousedown', (e) => {
+        e.preventDefault(); 
+    });
+
     taskEditBtn.addEventListener('click', (e) => {
         e.preventDefault(); 
         const isEditing = label.classList.contains('editing');
         if (isEditing) {
-            textSpan.blur(); // Якщо вже редагуємо, то втрачаємо фокус (зберігаємо)
+            textSpan.blur(); 
         } else {
-            textSpan.focus(); // Якщо не редагуємо, активуємо поле для вводу
+            textSpan.focus(); 
         }
     });
 
     taskList.appendChild(label);
 }
 
-// Функція для збереження всіх завдань у LocalStorage
 function saveTaskList() {
     const myTaskList = [];
     document.querySelectorAll('.task-list-item').forEach(item => {
@@ -124,9 +116,7 @@ function saveTaskList() {
     localStorage.setItem('myTaskList', JSON.stringify(myTaskList));
 }
 
-// Функція для завантаження списку завдань з LocalStorage
 function loadTaskList() {
-    // Видаляємо всі статичні завдання
     let staticTaskList = document.querySelectorAll('.task-list-item');
     staticTaskList.forEach(item => {
         item.remove();
@@ -135,18 +125,17 @@ function loadTaskList() {
     const savedTaskList = localStorage.getItem('myTaskList');
     if (savedTaskList) {
         const myTaskList = JSON.parse(savedTaskList);
-        myTaskList.forEach(task => { // Виправлено конфлікт імен
+        myTaskList.forEach(task => { 
             createTaskListElement(task.text, task.completed);
         });
     }
 }
 
-// Функція для обробки подій на статичних елементах списку
 function attachTaskListEvents(label) {
     const textSpan = label.querySelector('.task-text');
-    const taskEditBtn = label.querySelector('.task-edit-btn'); // Додано змінну сюди
+    const taskEditBtn = label.querySelector('.task-edit-btn'); 
 
-    if(!textSpan) return; // Захист від помилок
+    if(!textSpan) return; 
 
     textSpan.addEventListener('blur', () => {
         if (textSpan.innerText.trim() === "") {
@@ -208,6 +197,11 @@ function attachTaskListEvents(label) {
     }
 
     if (taskEditBtn) {
+        // ВИПРАВЛЕННЯ: Запобігаємо втраті фокусу текстом доки ми не клікнули кнопку
+        taskEditBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault(); 
+        });
+
         taskEditBtn.addEventListener('click', (e) => {
             e.preventDefault(); 
             const isEditing = label.classList.contains('editing');
@@ -220,13 +214,10 @@ function attachTaskListEvents(label) {
     }
 }
 
-// Навішуємо події на початкові завдання
 document.querySelectorAll('#task-list label').forEach(attachTaskListEvents);
 
-// Слухач кліку по кнопці "Додати"
 taskAddBtn.addEventListener('click', addTask);
 
-// Дозволяємо додавати завдання натисканням клавіші Enter
 taskInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         addTask();
